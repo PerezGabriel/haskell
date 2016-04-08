@@ -1,5 +1,3 @@
-
-
 -- Creando Tipos
 
 --aca creamos el Data Dia, y Lunes, Mart. etc son Constructores
