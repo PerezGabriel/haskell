@@ -142,7 +142,11 @@ armadorasFijas = [directo 10, licuadora, directo 5, coctelera True 10]
 allCoctelerasSinFlamb:: Int -> [Armadora]
 allCoctelerasSinFlamb n = [coctelera False n] ++ allCoctelerasSinFlamb (n+1)
 
+apodo:: Persona -> String
 apodo (UnaPersona nick _ _ _) = nick
+
+nombTrago:: Trago -> String
+nombTrago (UnTrago nomb _) = nomb
 
 escabio::Trago -> Float
 escabio = promedio.alcoholIngredientes.ingredientes
@@ -168,6 +172,14 @@ agregarTrago guy trago = UnaPersona (apodo guy) (resistencia guy) (ebriedad guy)
 subirAlcoholEnSangre:: (Persona, Float) -> Persona
 subirAlcoholEnSangre  (guy, alc) = UnaPersona (apodo guy) (resistencia guy) (alc + ebriedad guy) (tragos guy)
 
+armarTrago:: Trago -> Armadora -> Trago
+armarTrago trago armadora= UnTrago (nombTrago trago) (armadora.ingredientes $ trago)
+
+armarN:: Trago -> Int -> [Trago]
+armarN trago = map (armarTrago trago) . flip take armadorasDeLaCasa
+
+beberTodos:: Persona -> [Trago] -> Persona
+beberTodos persona = foldl beber persona
 -- ---·-----·-----·-----·-----
 -- ---·-----·-----·-----·-----
 armadorasDeLaCasa::[Armadora]
@@ -176,13 +188,9 @@ armadorasDeLaCasa = armadorasFijas ++ allCoctelerasSinFlamb 1
 beber::Persona -> Trago -> Persona
 beber persona = agregarResistencia 2 . ingerirTrago persona
 
-degustar:: Persona -> Trago -> [Armadora] -> Persona
-degustar persona trago lista = persona
-
-
-
-
-
+degustar:: Persona -> Trago -> Int -> Persona
+degustar persona trago = beberTodos persona . armarN trago
+ 
 
 
 
