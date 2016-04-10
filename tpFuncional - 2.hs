@@ -15,24 +15,20 @@ hielo30   = UnIngrediente "hielo" 0 0 0 30
 coca50    = UnIngrediente "cocaCola" 100  0 80 50
 naranja50 = UnIngrediente "jugoDeNaranja" 70  0 30 50
 
-puroVodka = [vodka10,vodka50,vodka100]
-
 
 type Condimento = (Float, Float, Float)
 
 azucar = (80, 5, 0) :: Condimento
 colorante = (15, 0, 100) :: Condimento
 
+-- ---·-----·-----·-----·EJERCICIO 1-----·-----·-----·-----··
+-- ---·-----·-----·-----·-----·-----·-----·-----·-----·-----· 
 
--- ###################################################################################
 ingreTest = [vodka10,naranja50,speed80]
 
+-- ---·-----·AUXILIARES-----·-----
+-- ---·-----·-----·-----·-----·---
 
-
------ EJERCICIO 1---------
-
-------------------------------
---------- AUXILIARES ---------
 nombre (UnIngrediente nom _ _ _ _) = nom
 
 prom2:: Fractional a => a -> a -> a
@@ -51,11 +47,12 @@ condimentoMaximo:: [Ingrediente]->Condimento
 condimentoMaximo listIng = (maximo dulzura listIng, maximo alcohol listIng, maximo color listIng) :: Condimento
 
 mezclarExcluyente:: Ingrediente->[Ingrediente]->Ingrediente
-mezclarExcluyente elemento = mezclar elemento .removeItem elemento
+mezclarExcluyente elemento = mezclar elemento . removeItem elemento
 
 removeItem:: Eq a => a -> [a] -> [a]
 removeItem x = filter (not.(==) x)
---------------------------------
+-- ---·-----·-----·-----·-----·---
+-- ---·-----·-----·-----·-----·---
 
 condimentar:: Ingrediente->Condimento->Ingrediente
 condimentar i = ingredienteFromTupla . (condimentarIngredienteATupla i)
@@ -65,24 +62,122 @@ mezclar i = condimentar i . condimentoMaximo
 
 batir::[Ingrediente]->[Ingrediente]
 batir ingredientes = map (`mezclarExcluyente` ingredientes) ingredientes
+-- ---·-----·-----·-----·-----·-----·-----·-----·-----·-----· 
+-- ---·-----·-----·-----·-----·-----·-----·-----·-----·-----· 
 
--------------------------------------------------------------
---------- EJERCICIO 2----------------
+
+-- ---·-----·-----·-----·EJERCICIO 2-----·-----·-----·-----··
+-- ---·-----·-----·-----·-----·-----·-----·-----·-----·-----· 
+
 type Armadora = [Ingrediente] -> [Ingrediente]
 
+-- ---·-----·AUXILIARES-----·-----
+-- ---·-----·-----·-----·-----·---
+
+crearHielo::Int -> Ingrediente
+crearHielo cantHielos = UnIngrediente ("hielo") 0 0 0 (fromIntegral cantHielos*10)
+
+agregar5Hielos::Armadora
+agregar5Hielos = (++) [crearHielo 5] 
+
+agregarAzucar::Armadora
+agregarAzucar = map (flip condimentar azucar)
+
+paridadSegundosAgita::Bool -> Armadora
+paridadSegundosAgita False  =  (++) [crearHielo 2] 
+paridadSegundosAgita _ = licuadora
+
+flameado::Int -> Ingrediente -> Ingrediente
+flameado seg (UnIngrediente nomb dul alc col cant) = UnIngrediente nomb (dul+2) (alc/2) (col+5) (cant - fromIntegral seg*0.1)
+
+flamearPrimero::Int -> Armadora
+flamearPrimero segAgita (x:xs) = (flameado segAgita) x : xs
+
+-- ---·-----·-----·-----·-----
+-- ---·-----·-----·-----·-----
+
+directo::Int -> Armadora
+directo cantHielos = (++) [crearHielo cantHielos]
+
+licuadora::Armadora
+licuadora = batir.agregar5Hielos.agregarAzucar
+
+coctelera::Bool -> Int -> Armadora
+coctelera False segAgita  = paridadSegundosAgita (even segAgita)
+coctelera _ segAgita = flamearPrimero segAgita
+-- ---·-----·-----·-----·-----·-----·-----·-----·-----·-----· 
+-- ---·-----·-----·-----·-----·-----·-----·-----·-----·-----· 
 
 
+-- ---·-----·-----·-----·EJERCICIO 3-----·-----·-----·-----··
+-- ---·-----·-----·-----·-----·-----·-----·-----·-----·-----· 
+
+data Trago = UnTrago String [Ingrediente] deriving (Show,Eq)
+
+ingredientes (UnTrago _ ingredientes) = ingredientes
 
 
+data Persona = UnaPersona String Float Float [Trago] deriving (Show,Eq)
 
--------AUXILIARES------------------
-crearHielo::Int->Ingrediente
-crearHielo cantHielos = UnIngrediente ("hielo"++show cantHielos) 0 0 0 (fromIntegral cantHielos*10)
+resistencia (UnaPersona _ res _ _)  = res
+ebriedad    (UnaPersona _ _ ebr _)  = ebr
+tragos      (UnaPersona _ _ _ trgs) = trgs
 
+fernerConCoca   = UnTrago "Branca" [ hielo30, fernet50, coca50]
+destornillador  = UnTrago "Destornillador" [hielo30, naranja50, vodka50]
+speedConVodka   = UnTrago "Speed con vodka" [ vodka10,  speed80]
+puroVodka       = UnTrago "Vodka" [ hielo30,  vodka100]
+vodkaMenta      = UnTrago "Vodka Menta" [ vodka50,  fernet20 ]
 
+charlySheen = UnaPersona "charly" 98 50 [ puroVodka , fernerConCoca ]
+chuckNorris = UnaPersona "chuck" 100 0 [ vodkaMenta ]
+funesMori   = UnaPersona "el memorioso" 0 75 [ speedConVodka ]
 
+-- ---·-----·AUXILIARES-----·-----
+-- ---·-----·-----·-----·-----·---
 
+armadorasFijas::[Armadora]
+armadorasFijas = [directo 10, licuadora, directo 5, coctelera True 10]
 
+allCoctelerasSinFlamb:: Int -> [Armadora]
+allCoctelerasSinFlamb n = [coctelera False n] ++ allCoctelerasSinFlamb (n+1)
+
+apodo (UnaPersona nick _ _ _) = nick
+
+escabio::Trago -> Float
+escabio = promedio.alcoholIngredientes.ingredientes
+
+alcoholIngredientes::[Ingrediente]->[Float]
+alcoholIngredientes = map alcohol
+
+promedio::Fractional a => [a] -> a -- avg no me anduvo
+promedio lista = sum lista / fromIntegral (length lista)
+
+agregarResistencia:: Int -> Persona -> Persona
+agregarResistencia n guy = UnaPersona (apodo guy) (resistencia guy + fromIntegral n) (ebriedad guy) (tragos guy)
+
+ingerirTrago:: Persona -> Trago -> Persona
+ingerirTrago persona = subirAlcoholEnSangre.(recordarTrago persona)
+
+recordarTrago:: Persona -> Trago ->(Persona, Float)
+recordarTrago guy trago= (agregarTrago guy trago, escabio trago )
+
+agregarTrago:: Persona -> Trago -> Persona
+agregarTrago guy trago = UnaPersona (apodo guy) (resistencia guy) (ebriedad guy) ( [trago] ++ tragos guy)
+
+subirAlcoholEnSangre:: (Persona, Float) -> Persona
+subirAlcoholEnSangre  (guy, alc) = UnaPersona (apodo guy) (resistencia guy) (alc + ebriedad guy) (tragos guy)
+
+-- ---·-----·-----·-----·-----
+-- ---·-----·-----·-----·-----
+armadorasDeLaCasa::[Armadora]
+armadorasDeLaCasa = armadorasFijas ++ allCoctelerasSinFlamb 1
+
+beber::Persona -> Trago -> Persona
+beber persona = agregarResistencia 2 . ingerirTrago persona
+
+degustar:: Persona -> Trago -> [Armadora] -> Persona
+degustar persona trago lista = persona
 
 
 
