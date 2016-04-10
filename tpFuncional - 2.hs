@@ -21,10 +21,11 @@ type Condimento = (Float, Float, Float)
 azucar = (80, 5, 0) :: Condimento
 colorante = (15, 0, 100) :: Condimento
 
+
+
 -- ---·-----·-----·-----·EJERCICIO 1-----·-----·-----·-----··
 -- ---·-----·-----·-----·-----·-----·-----·-----·-----·-----· 
 
-ingreTest = [vodka10,naranja50,speed80]
 
 -- ---·-----·AUXILIARES-----·-----
 -- ---·-----·-----·-----·-----·---
@@ -40,13 +41,12 @@ condimentarIngredienteATupla i (d, a, co) = (nombre i, prom2 d (dulzura i), prom
 
 maximo:: (a->Float) -> [a]-> Float
 maximo f [] = 0.0
-maximo f (x:[]) = f x
 maximo f (x:xs) = max (maximo f xs) (f x)
-
-condimentoMaximo:: [Ingrediente]->Condimento
+ 
+condimentoMaximo:: [Ingrediente] -> Condimento
 condimentoMaximo listIng = (maximo dulzura listIng, maximo alcohol listIng, maximo color listIng) :: Condimento
 
-mezclarExcluyente:: Ingrediente->[Ingrediente]->Ingrediente
+mezclarExcluyente:: Ingrediente -> [Ingrediente] -> Ingrediente
 mezclarExcluyente elemento = mezclar elemento . removeItem elemento
 
 removeItem:: Eq a => a -> [a] -> [a]
@@ -54,13 +54,13 @@ removeItem x = filter (not.(==) x)
 -- ---·-----·-----·-----·-----·---
 -- ---·-----·-----·-----·-----·---
 
-condimentar:: Ingrediente->Condimento->Ingrediente
+condimentar:: Ingrediente -> Condimento -> Ingrediente
 condimentar i = ingredienteFromTupla . (condimentarIngredienteATupla i)
 
-mezclar:: Ingrediente->[Ingrediente]->Ingrediente
+mezclar:: Ingrediente -> [Ingrediente] -> Ingrediente
 mezclar i = condimentar i . condimentoMaximo 
 
-batir::[Ingrediente]->[Ingrediente]
+batir::[Ingrediente] -> [Ingrediente]
 batir ingredientes = map (`mezclarExcluyente` ingredientes) ingredientes
 -- ---·-----·-----·-----·-----·-----·-----·-----·-----·-----· 
 -- ---·-----·-----·-----·-----·-----·-----·-----·-----·-----· 
@@ -88,7 +88,7 @@ paridadSegundosAgita False  =  (++) [crearHielo 2]
 paridadSegundosAgita _ = licuadora
 
 flameado::Int -> Ingrediente -> Ingrediente
-flameado seg (UnIngrediente nomb dul alc col cant) = UnIngrediente nomb (dul+2) (alc/2) (col+5) (cant - fromIntegral seg*0.1)
+flameado seg (UnIngrediente nomb dul alc col cant) = UnIngrediente nomb (dul+2) (alc/2) (col+5) (cant - fromIntegral seg*0.1) -- en la entrega, lo force
 
 flamearPrimero::Int -> Armadora
 flamearPrimero segAgita (x:xs) = (flameado segAgita) x : xs
@@ -151,7 +151,7 @@ nombTrago (UnTrago nomb _) = nomb
 escabio::Trago -> Float
 escabio = promedio.alcoholIngredientes.ingredientes
 
-alcoholIngredientes::[Ingrediente]->[Float]
+alcoholIngredientes::[Ingrediente] -> [Float]
 alcoholIngredientes = map alcohol
 
 promedio::Fractional a => [a] -> a -- avg no me anduvo
@@ -190,34 +190,6 @@ beber persona = agregarResistencia 2 . ingerirTrago persona
 
 degustar:: Persona -> Trago -> Int -> Persona
 degustar persona trago = beberTodos persona . armarN trago
- 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
------ OTRAS SOLUCIONES --------
-----EJERCICIO 1--------
-promediadosCondimento i (dulCond, alcCond, colCond) = ( ((prom2 dulCond).dulzura) i, ((prom2 alcCond).alcohol) i, ((prom2 colCond).color) i)
-ingredienteCondimentado' (nom, cant) (dul, alc, col) = UnIngrediente nom dul alc col cant
-hacerTupla i = (nombre i, dulzura i, alcohol i, color i, cant i)
-condimentarTuplas (nomb, dulI, alcI, colI, cant) (dul, alc, col) = (nomb, prom2 dul dulI, prom2 alc alcI, prom2 col colI, cant)
-ingredienteDesdeTupla (nomb, dul, alc, col, cant) = UnIngrediente nomb dul alc col cant
-
-condimentar''':: Ingrediente->Condimento->Ingrediente
-condimentar''' i = (ingredienteCondimentado' (nombre i, cant i)). (promediadosCondimento i)
-condimentar' i (dul, alc, col) = UnIngrediente (nombre i) (((prom2 dul).dulzura) i) (((prom2 alc).alcohol) i) (((prom2 col).color) i) (cant i)
-condimentar'' ingre = ingredienteDesdeTupla . (condimentarTuplas (hacerTupla ingre))
-------------------------------
+-- ---·-----·-----·-----·-----·-----·-----·-----·-----·-----· 
+-- ---·-----·-----·-----·-----·-----·-----·-----·-----·-----· 
