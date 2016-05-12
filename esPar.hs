@@ -1,3 +1,4 @@
 esPar:: Int->Bool
 
-esPar numero = mod numero 2 == 0
+esPar numerito = mod numerito 2 == 0
+
